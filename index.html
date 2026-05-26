@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ro" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Focus - Goal Tracker + Habit Builder</title>
+  <meta name="description" content="A modern, responsive application to track your goals, build daily habits, and monitor your progress effortlessly." />
+  <link rel="canonical" href="https://yourdomain.com/" />
+  
+  <meta property="og:title" content="Focus - Goal Tracker + Habit Builder" />
+  <meta property="og:description" content="A modern, responsive application to track your goals and build daily habits." />
+  <meta property="og:type" content="website" />
+  
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Focus - Goal Tracker + Habit Builder",
+    "description": "A modern, responsive application to track your goals, build daily habits, and monitor your progress.",
+    "applicationCategory": "Productivity",
+    "operatingSystem": "All"
+  }
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div id="onboarding-overlay" class="overlay hidden" aria-modal="true" role="dialog">
+    <div class="onboarding-card">
+      <div class="onboarding-logo">
+        <span class="logo-icon" aria-hidden="true">◎</span>
+        <span class="logo-text">Focus</span>
+      </div>
+      <h1 class="onboarding-title" data-i18n="welcome">Bine ai venit!</h1>
+      <p class="onboarding-subtitle" data-i18n="welcomeSub">Cum te numești? Vom personaliza experiența ta.</p>
+      <div class="input-group">
+        <input type="text" id="username-input" class="text-input"
+          data-i18n-placeholder="namePlaceholder" placeholder="Numele tău..."
+          aria-label="Numele tău"
+          maxlength="30" autocomplete="off" />
+        <span class="input-error" id="username-error" aria-live="polite"></span>
+      </div>
+      <button class="btn btn-primary btn-full" id="save-username-btn">
+        <span data-i18n="continue">Continuă</span>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="delete-overlay" class="overlay hidden" aria-modal="true" role="dialog">
+    <div class="confirm-card">
+      <div class="confirm-icon" aria-hidden="true">⚠</div>
+      <h2 data-i18n="deleteTitle">Ștergi obiectivul?</h2>
+      <p data-i18n="deleteMsg">Această acțiune nu poate fi anulată.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" id="cancel-delete-btn" data-i18n="cancel">Anulează</button>
+        <button class="btn btn-danger" id="confirm-delete-btn" data-i18n="delete">Șterge</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app" class="app">
+
+    <aside class="sidebar" aria-label="Sidebar navigation">
+      <div class="sidebar-top">
+
+        <div class="brand">
+          <span class="logo-icon" aria-hidden="true">◎</span>
+          <span class="logo-text">Focus</span>
+        </div>
+
+        <div class="lang-selector" id="lang-selector" role="group" aria-label="Language selection">
+          <button class="lang-btn active" data-lang="ro" aria-label="Română">RO</button>
+          <button class="lang-btn" data-lang="en" aria-label="English">EN</button>
+          <button class="lang-btn" data-lang="ru" aria-label="Русский">RU</button>
+        </div>
+
+        <div class="user-profile">
+          <div class="user-avatar" id="user-avatar" aria-hidden="true">A</div>
+          <div class="user-info">
+            <span class="user-greeting" data-i18n="hi">Salut,</span>
+            <strong class="user-name" id="sidebar-username">Utilizator</strong>
+          </div>
+          <button class="icon-btn" id="change-user-btn" data-i18n-title="changeUser" title="Schimbă utilizatorul" aria-label="Schimbă utilizatorul">
+            <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+
+        <div class="sidebar-stats">
+          <div class="stat-pill">
+            <span class="stat-label" data-i18n="total">Total</span>
+            <span class="stat-value" id="stat-total">0</span>
+          </div>
+          <div class="stat-pill stat-done">
+            <span class="stat-label" data-i18n="done">Finalizate</span>
+            <span class="stat-value" id="stat-done">0</span>
+          </div>
+          <div class="stat-pill stat-pending">
+            <span class="stat-label" data-i18n="pending">Pending</span>
+            <span class="stat-value" id="stat-pending">0</span>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <div class="progress-header">
+            <div class="progress-label-wrap">
+              <svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              <span data-i18n="goalsProgress">Goals Progress</span>
+            </div>
+            <span class="progress-pct" id="goals-pct">0%</span>
+          </div>
+          <div class="progress-bar-track" aria-hidden="true">
+            <div class="progress-bar-fill progress-goals" id="goals-bar"></div>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <div class="progress-header">
+            <div class="progress-label-wrap">
+              <svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              <span data-i18n="habitsProgress">Habits Progress</span>
+            </div>
+            <span class="progress-pct progress-pct-habit" id="habits-pct">0%</span>
+          </div>
+          <div class="progress-bar-track" aria-hidden="true">
+            <div class="progress-bar-fill progress-habits" id="habits-bar"></div>
+          </div>
+          <div class="progress-reset-note">
+            <svg aria-hidden="true" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+            <span data-i18n="resetsDaily">Se resetează zilnic</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Main filters">
+        <button class="nav-item active" data-filter="all">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <span data-i18n="filterAll">Toate</span>
+        </button>
+        <button class="nav-item" data-filter="completed">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+          <span data-i18n="filterCompleted">Finalizate</span>
+        </button>
+        <button class="nav-item" data-filter="pending">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span data-i18n="filterPending">În așteptare</span>
+        </button>
+        <button class="nav-item" data-filter="goal">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <span data-i18n="filterGoals">Obiective</span>
+        </button>
+        <button class="nav-item" data-filter="habit">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          <span data-i18n="filterHabits">Obiceiuri</span>
+        </button>
+        <button class="nav-item nav-item-overdue" data-filter="overdue">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span data-i18n="filterOverdue">Depășite</span>
+          <span class="overdue-count-badge" id="overdue-badge" style="display:none">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+          <span class="theme-icon" id="theme-icon" aria-hidden="true">🌙</span>
+          <span id="theme-label" data-i18n="darkMode">Dark Mode</span>
+          <div class="toggle-switch" aria-hidden="true"></div>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+            <span></span><span></span><span></span>
+          </button>
+          <h1 class="page-title"><span id="welcome-msg"></span></h1>
+        </div>
+        <div class="topbar-right">
+          <div class="search-wrap">
+            <svg aria-hidden="true" class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="search-input" class="search-input"
+              data-i18n-placeholder="searchPlaceholder" placeholder="Caută..." aria-label="Caută obiective"/>
+          </div>
+        </div>
+      </header>
+
+      <section class="form-section">
+        <div class="form-card">
+          <div class="form-card-header" id="form-toggle-header" tabindex="0" role="button" aria-expanded="true">
+            <h2 class="form-title">
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span data-i18n="addNew">Adaugă obiectiv nou</span>
+            </h2>
+            <button class="chevron-btn rotated" id="form-chevron" aria-label="Toggle form visibility">
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+          </div>
+
+          <div class="form-body" id="form-body">
+            <div class="form-grid">
+
+              <div class="field field-full">
+                <label class="field-label" for="goal-title" data-i18n="titleLabel">Titlu *</label>
+                <input type="text" id="goal-title" class="text-input"
+                  data-i18n-placeholder="titlePlaceholder" placeholder="Ex: Citesc 30 min/zi..."
+                  maxlength="80" autocomplete="off" />
+                <span class="input-error" id="title-error" aria-live="polite"></span>
+              </div>
+
+              <div class="field field-full">
+                <label class="field-label" for="goal-desc" data-i18n="descLabel">Descriere</label>
+                <textarea id="goal-desc" class="text-input textarea"
+                  data-i18n-placeholder="descPlaceholder" placeholder="Detalii..."
+                  maxlength="300" rows="2"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="field-label" id="cat-label" data-i18n="categoryLabel">Categorie</label>
+                <div class="seg-control" id="category-control" role="group" aria-labelledby="cat-label">
+                  <button class="seg-btn active" data-value="goal" aria-pressed="true">
+                    <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    Goal
+                  </button>
+                  <button class="seg-btn" data-value="habit" aria-pressed="false">
+                    <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                    Habit
+                  </button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label" id="pri-label" data-i18n="priorityLabel">Prioritate</label>
+                <div class="seg-control" id="priority-control" role="group" aria-labelledby="pri-label">
+                  <button class="seg-btn" data-value="low" data-i18n-seg="low" aria-pressed="false">Low</button>
+                  <button class="seg-btn active" data-value="medium" data-i18n-seg="medium" aria-pressed="true">Medium</button>
+                  <button class="seg-btn" data-value="high" data-i18n-seg="high" aria-pressed="false">High</button>
+                </div>
+              </div>
+
+              <div class="field" id="due-date-field">
+                <label class="field-label" for="goal-date">
+                  <span data-i18n="dueDateLabel">Data limită</span>
+                  <span class="optional" data-i18n="optional">(opțional)</span>
+                </label>
+                <input type="date" id="goal-date" class="text-input" />
+                <span class="input-error" id="date-error" aria-live="polite"></span>
+              </div>
+
+              <div class="field field-submit">
+                <button class="btn btn-primary btn-add" id="add-goal-btn">
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span data-i18n="addGoal">Add Goal</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="list-section">
+        <div class="list-header">
+          <h2 class="list-title" id="list-title"></h2>
+          <span class="list-count" id="list-count"></span>
+        </div>
+        <div class="empty-state hidden" id="empty-state">
+          <div class="empty-illustration" aria-hidden="true">◎</div>
+          <h3 id="empty-title"></h3>
+          <p id="empty-msg"></p>
+        </div>
+        <div class="goals-grid" id="goals-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="sidebar-overlay hidden" id="sidebar-overlay"></div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
